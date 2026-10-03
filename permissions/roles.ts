@@ -11,5 +11,5 @@ export const writable:Record<string,string[]>={
 'Doctor / Physiotherapist':['Appointments','Consultation','Treatments','Plans','Records'],
 'Receptionist':['Patients','Appointments','Billing','Payments'],
 'Accountant':['Billing','Payments','Schemes','Packages']};
-export const canRead=(role:string,kind:string)=>(readable[role]||[]).includes(kind);
+export const canRead=(role:string,kind:string)=>Boolean(readable[role])&&(kind==='Settings'||(readable[role]||[]).includes(kind));
 export const canWrite=(role:string,kind:string)=>(writable[role]||[]).includes(kind);
