@@ -64,3 +64,4 @@
 @media(max-width:1400px){.top-actions{gap:12px}.top-actions .live{display:none}}
 @media(max-width:1000px){.theme-switch button{padding:8px;min-height:38px}.theme-switch button span{display:none}}
 @media print{.theme-switch{display:none}}
+@media(max-width:480px){.topbar .breadcrumb b{display:none}.topbar{padding:0 8px}.top-actions{gap:5px}.theme-switch button{min-height:44px}}
