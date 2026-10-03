@@ -1,0 +1,3 @@
+export async function loadRecords(){const r=await fetch('/api/clinic');if(!r.ok)throw new Error('Unable to load saved records');return (await r.json() as any).records;}
+export async function saveRecord(kind:string,data:any,id?:string){const r=await fetch('/api/clinic',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({kind,data,id})});const result:any=await r.json();if(!r.ok)throw new Error(result.error);return result;}
+export async function removeRecord(id:string){const r=await fetch('/api/clinic',{method:'DELETE',headers:{'Content-Type':'application/json'},body:JSON.stringify({id})});if(!r.ok)throw new Error('Could not delete record');}

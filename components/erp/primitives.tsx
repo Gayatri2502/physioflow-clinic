@@ -1,0 +1,6 @@
+import { ChevronDown, X, ArrowUpRight } from 'lucide-react';
+export function Status({value}:{value:string}){return <span className={'status '+(/Paid|Completed|Available|Approved/.test(value)?'green':/Treatment|Review|Confirmed/.test(value)?'blue':/Cancel|Overdue|Reject/.test(value)?'red':'amber')}>{value}</span>}
+export function Avatar({name,index=0}:{name:string,index?:number}){return <span className={'avatar av'+index%5}>{name.replace('Dr. ','').split(' ').map(x=>x[0]).slice(0,2).join('')}</span>}
+export function Card({title,value,detail,icon:Icon,tone='teal'}:any){return <div className="metric"><div className="metric-top"><span>{title}</span><div className={'metric-icon '+tone}><Icon size={19}/></div></div><div className="metric-value">{value}</div><div className="metric-foot"><span className="trend"><ArrowUpRight size={13}/> {detail}</span><span>vs. last month</span></div></div>}
+export function Modal({title,children,onClose}:any){return <div className="modal-backdrop" onClick={onClose}><section className="modal" onClick={e=>e.stopPropagation()}><header><h2>{title}</h2><button className="icon-btn" onClick={onClose}><X/></button></header>{children}</section></div>}
+export function Empty({label}:{label:string}){return <div className="empty">No {label.toLowerCase()} found. Create a record to get started.</div>}
