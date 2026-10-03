@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import {workspaceFor} from '../../permissions/workspaces';
+import {roles,canRead,canWrite} from '../../permissions/roles';
 import fs from 'node:fs';
 import {DatabaseSync} from 'node:sqlite';
 import * as portal from '../../app/api/patient/route';
@@ -19,6 +21,8 @@ const request=(body:any)=>new Request('https://clinic.test/api/clinic',{method:'
 async function post(kind:string,data:any,id?:string,expected=200){const res=await api.POST(request({kind,data,id}));const result:any=await res.json();assert.equal(res.status,expected,JSON.stringify(result));return result;}
 async function get(){const res=await api.GET();assert.equal(res.status,200);return await res.json() as any;}
 (async()=>{
+const titles=new Set();for(const role of roles){const workspace=workspaceFor(role);titles.add(workspace.title);assert.equal(workspace.navigation[0],'Dashboard');assert.ok(workspace.navigation.every(module=>canRead(role,module)));if('primary' in workspace&&workspace.primary)assert.ok(canWrite(role,workspace.primary));}assert.equal(titles.size,roles.length);assert.equal(workspaceFor('Unknown').navigation.length,0);assert.ok(!workspaceFor('Patient').navigation.includes('Reports'));assert.ok(!workspaceFor('Receptionist').navigation.includes('Consultation'));assert.ok(!workspaceFor('Accountant').navigation.includes('Treatments'));assert.ok(!workspaceFor('Doctor / Physiotherapist').navigation.includes('Accounting'));
+
 let response=await bootstrap.POST(request({action:'sample'}));assert.equal(response.status,200,await response.text());let state=await get();assert.equal(state.records.filter((x:any)=>x.kind==='Patients').length,8);assert.equal(state.records.filter((x:any)=>x.kind==='Appointments').length,8);
 const patient=await post('Patients',{Name:'Test Patient',Phone:'9876543210',Department:'Orthopedic Physiotherapy',Therapist:'Dr. Ananya Sharma'});assert.ok(patient.data.UHID);const base={Patient:'Test Patient',patientId:patient.id,Therapist:'Dr. Ananya Sharma',Department:'Orthopedic Physiotherapy'};
 const appointment=await post('Appointments',{...base,Date:'2026-10-10',Time:'10:00',Duration:45,Type:'Clinic visit',Status:'Confirmed'});
