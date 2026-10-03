@@ -8,6 +8,13 @@
       "when": 1791022373036,
       "tag": "0000_tranquil_stryfe",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "6",
+      "when": 1791022595177,
+      "tag": "0001_last_plazm",
+      "breakpoints": true
     }
   ]
 }
