@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import {AppearanceProvider} from "../components/erp/appearance";
 
 export const metadata: Metadata = {
   title: "PhysioFlow | Clinic ERP",
@@ -19,8 +20,8 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en">
-      <body className="antialiased">{children}</body>
+    <html lang="en" suppressHydrationWarning>
+      <body className="antialiased"><AppearanceProvider>{children}</AppearanceProvider></body>
     </html>
   );
 }
