@@ -51,3 +51,16 @@
 [data-theme="dark"] :focus-visible{outline:2px solid #67dac6;outline-offset:3px}
 @media(max-width:760px){.theme-control{gap:3px}.theme-control select{width:76px}.top-actions{gap:8px}}
 @media print{[data-theme="dark"],[data-theme="dark"] body,[data-theme="dark"] .modal-backdrop,[data-theme="dark"] .modal,[data-theme="dark"] .print-invoice,[data-theme="dark"] .print-report{background:white!important;color:#243544!important;box-shadow:none}[data-theme="dark"] :is(.print-invoice,.print-report,.modal)>*,[data-theme="dark"] :is(.print-invoice,.print-report) :is(h1,h2,h3,h4,td,th,strong,small,p){color:#243544!important}[data-theme="dark"] :is(.print-invoice,.print-report) :is(th,.invoice-total,.profile-details){background:#f5f7fa!important}[data-theme="dark"] :is(.print-invoice,.print-report) :is(td,th,hr){border-color:#dfe8ec!important}}
+
+/* Direct, always-visible theme choices; each option switches in one click. */
+.theme-switch{display:flex;align-items:center;flex-shrink:0;gap:3px;padding:3px;border:1px solid #dfe8ec;background:#f5f8fa;border-radius:9px}
+.theme-switch button{display:flex;align-items:center;justify-content:center;gap:6px;min-width:44px;min-height:38px;padding:8px 10px;border-radius:6px;color:#647887;font-size:14px}
+.theme-switch button:hover{background:#e7efef;color:#243544}
+.theme-switch button.is-selected{background:#fff;color:#087e73;box-shadow:0 1px 5px #173e3b1a;font-weight:600}
+[data-theme="dark"] .theme-switch{background:#0f1926;border-color:#354a60}
+[data-theme="dark"] .theme-switch button{color:#aebfd0}
+[data-theme="dark"] .theme-switch button:hover{background:#26384a;color:#e3edf6}
+[data-theme="dark"] .theme-switch button.is-selected{background:#24423f;color:#87e6d3;box-shadow:none}
+@media(max-width:1400px){.top-actions{gap:12px}.top-actions .live{display:none}}
+@media(max-width:1000px){.theme-switch button{padding:8px;min-height:38px}.theme-switch button span{display:none}}
+@media print{.theme-switch{display:none}}

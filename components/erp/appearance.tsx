@@ -9,17 +9,19 @@ export function AppearanceProvider({children}: {children: React.ReactNode}) {
 }
 
 export function ThemeControl() {
-  const {theme, setTheme} = useTheme();
+  const {theme, resolvedTheme, setTheme} = useTheme();
   const [mounted, setMounted] = useState(false);
   useEffect(() => setMounted(true), []);
   const selected = mounted ? theme || 'system' : 'system';
-  const Icon = selected === 'dark' ? Moon : selected === 'light' ? Sun : Monitor;
-  return <label className="theme-control" title="Appearance: System follows your device setting">
-    <Icon size={16} aria-hidden="true"/>
-    <select aria-label="Appearance" value={selected} disabled={!mounted} onChange={event => setTheme(event.target.value)}>
-      <option value="system">System</option>
-      <option value="light">Light</option>
-      <option value="dark">Dark</option>
-    </select>
-  </label>;
+  return <div className="theme-switch" role="group" aria-label="Appearance">
+    {([{value:'light', label:'Light', Icon:Sun}, {value:'dark', label:'Dark', Icon:Moon}, {value:'system', label:'System', Icon:Monitor}] as const).map(({value, label, Icon}) => <button
+      key={value} type="button" disabled={!mounted}
+      className={selected === value ? 'is-selected' : ''}
+      aria-label={value === 'system' ? 'Use device theme' : `Use ${label.toLowerCase()} theme`}
+      aria-pressed={mounted && selected === value}
+      title={value === 'system' ? `Follow device appearance (${mounted ? resolvedTheme : 'system'})` : `Switch to ${label.toLowerCase()} theme`}
+      onClick={() => setTheme(value)}>
+      <Icon size={17} aria-hidden="true"/><span>{label}</span>
+    </button>)}
+  </div>;
 }
