@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import {validateDemoLogin,demoSessionRole,roleMatchesAccount} from '../../services/domain/demo-login';
+import * as demoLoginApi from '../../app/api/demo-login/route';
 import {demoClinic} from '../../services/demo';
 import {demoAccounts} from '../../config/demo';
 import {demoHref} from '../../components/erp/demo-navigation';
@@ -24,6 +26,10 @@ const request=(body:any)=>new Request('https://clinic.test/api/clinic',{method:'
 async function post(kind:string,data:any,id?:string,expected=200){const res=await api.POST(request({kind,data,id}));const result:any=await res.json();assert.equal(res.status,expected,JSON.stringify(result));return result;}
 async function get(){const res=await api.GET();assert.equal(res.status,200);return await res.json() as any;}
 (async()=>{
+for(const account of demoAccounts){assert.equal(validateDemoLogin({role:account.key,email:account.email,password:account.password})?.key,account.key);assert.equal(validateDemoLogin({role:account.key,email:account.email,password:'incorrect'}),null);for(const other of demoAccounts.filter(x=>x.key!==account.key)){assert.equal(validateDemoLogin({role:other.key,email:account.email,password:account.password}),null);assert.equal(roleMatchesAccount(other.key,account.role),false);}assert.equal(roleMatchesAccount(account.key,account.role),true);const response=await demoLoginApi.POST(new Request('https://clinic.test/api/demo-login',{method:'POST',headers:{'Content-Type':'application/json',Origin:'https://clinic.test'},body:JSON.stringify({role:account.key,email:account.email,password:account.password})}));assert.equal(response.status,200);const cookie=response.headers.get('Set-Cookie')!;assert.ok(cookie.includes('HttpOnly'));assert.equal(demoSessionRole(cookie),account.key);assert.equal((await demoLoginApi.GET(new Request('https://clinic.test/api/demo-login',{headers:{cookie}}))).status,200);}
+assert.equal(validateDemoLogin({role:'super-admin',email:'doctor@demo.physioflow.local',password:'DoctorDemo2026!'}),null);assert.equal(demoSessionRole('physioflow_demo=patient%7C1'),null);assert.equal((await demoLoginApi.GET(new Request('https://clinic.test/api/demo-login'))).status,401);assert.equal((await demoLoginApi.POST(new Request('https://clinic.test/api/demo-login',{method:'POST',body:JSON.stringify({role:'super-admin',email:'doctor@demo.physioflow.local',password:'DoctorDemo2026!'})}))).status,401);assert.ok((await demoLoginApi.DELETE()).headers.get('Set-Cookie')?.includes('Max-Age=0'));
+console.log('PASS: all six role credential combinations, mismatched roles/passwords, session expiry, sign-out and assigned clinic role checks.');
+
 for(const account of demoAccounts){const demo=demoClinic(account.key);assert.equal(demo.actor.role,account.role);assert.equal(demo.actor.owner,'demo-clinic');assert.ok(demo.records.some(x=>x.kind==='Settings'));assert.ok(!demo.records.some(x=>x.data.documentKey));if(account.key==='patient'){assert.equal(demo.records.filter(x=>x.kind==='Patients').length,1);assert.ok(demo.records.every(x=>!x.data.patientId||x.data.patientId===demo.actor.patientId));}if(['receptionist','accountant'].includes(account.key))assert.ok(!demo.records.some(x=>x.kind==='Consultation'||x.kind==='Treatments'));}
 assert.throws(()=>demoClinic('arbitrary-role'));assert.equal(demoHref('/Appointments'),'/demo/Appointments');assert.equal(demoHref('/Settings?tab=Audit%20log'),'/demo/Settings?tab=Audit%20log');assert.equal(demoHref('/login'),'/login');assert.equal(demoHref('/'),'/demo/Dashboard');
 
