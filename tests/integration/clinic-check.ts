@@ -1,4 +1,7 @@
 import assert from 'node:assert/strict';
+import {demoClinic} from '../../services/demo';
+import {demoAccounts} from '../../config/demo';
+import {demoHref} from '../../components/erp/demo-navigation';
 import {workspaceFor} from '../../permissions/workspaces';
 import {roles,canRead,canWrite} from '../../permissions/roles';
 import fs from 'node:fs';
@@ -21,6 +24,9 @@ const request=(body:any)=>new Request('https://clinic.test/api/clinic',{method:'
 async function post(kind:string,data:any,id?:string,expected=200){const res=await api.POST(request({kind,data,id}));const result:any=await res.json();assert.equal(res.status,expected,JSON.stringify(result));return result;}
 async function get(){const res=await api.GET();assert.equal(res.status,200);return await res.json() as any;}
 (async()=>{
+for(const account of demoAccounts){const demo=demoClinic(account.key);assert.equal(demo.actor.role,account.role);assert.equal(demo.actor.owner,'demo-clinic');assert.ok(demo.records.some(x=>x.kind==='Settings'));assert.ok(!demo.records.some(x=>x.data.documentKey));if(account.key==='patient'){assert.equal(demo.records.filter(x=>x.kind==='Patients').length,1);assert.ok(demo.records.every(x=>!x.data.patientId||x.data.patientId===demo.actor.patientId));}if(['receptionist','accountant'].includes(account.key))assert.ok(!demo.records.some(x=>x.kind==='Consultation'||x.kind==='Treatments'));}
+assert.throws(()=>demoClinic('arbitrary-role'));assert.equal(demoHref('/Appointments'),'/demo/Appointments');assert.equal(demoHref('/Settings?tab=Audit%20log'),'/demo/Settings?tab=Audit%20log');assert.equal(demoHref('/login'),'/login');assert.equal(demoHref('/'),'/demo/Dashboard');
+
 const titles=new Set();for(const role of roles){const workspace=workspaceFor(role);titles.add(workspace.title);assert.equal(workspace.navigation[0],'Dashboard');assert.ok(workspace.navigation.every(module=>canRead(role,module)));if('primary' in workspace&&workspace.primary)assert.ok(canWrite(role,workspace.primary));}assert.equal(titles.size,roles.length);assert.equal(workspaceFor('Unknown').navigation.length,0);assert.ok(!workspaceFor('Patient').navigation.includes('Reports'));assert.ok(!workspaceFor('Receptionist').navigation.includes('Consultation'));assert.ok(!workspaceFor('Accountant').navigation.includes('Treatments'));assert.ok(!workspaceFor('Doctor / Physiotherapist').navigation.includes('Accounting'));
 
 let response=await bootstrap.POST(request({action:'sample'}));assert.equal(response.status,200,await response.text());let state=await get();assert.equal(state.records.filter((x:any)=>x.kind==='Patients').length,8);assert.equal(state.records.filter((x:any)=>x.kind==='Appointments').length,8);
