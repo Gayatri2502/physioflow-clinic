@@ -1,6 +1,6 @@
 
 'use client';
-import Link from 'next/link';
+import Link from './navigation-link';
 import {Users,CalendarDays,Wallet,Receipt,ChevronRight,SlidersHorizontal,CalendarDays as Calendar,ChevronLeft,Clock,Activity,ClipboardList,Package,ShieldCheck,Stethoscope} from 'lucide-react';
 import {ResponsiveContainer,AreaChart,Area,CartesianGrid,XAxis,YAxis,Tooltip} from 'recharts';
 import {MonthCalendar,dateKey} from './calendar';
