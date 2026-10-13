@@ -1,0 +1,8 @@
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import {createHmac} from 'node:crypto';
+import {validSignature,assertCapturedPayment,amountPaise,paymentDate} from '../lib/payments/razorpay-core.mjs';
+test('checkout signature rejects tampered ids, malformed hex and wrong secrets',()=>{const msg='order_one|pay_one',secret='test-secret',sig=createHmac('sha256',secret).update(msg).digest('hex');assert.ok(validSignature(msg,sig,secret));assert.equal(validSignature('order_two|pay_one',sig,secret),false);assert.equal(validSignature(msg,'0',secret),false);assert.equal(validSignature(msg,sig,'other'),false);});
+test('webhook signature covers original raw bytes',()=>{const raw='{"event": "payment.captured"}',sig=createHmac('sha256','secret').update(raw).digest('hex');assert.ok(validSignature(raw,sig,'secret'));assert.equal(validSignature(JSON.stringify(JSON.parse(raw)),sig,'secret'),false);});
+test('only exact captured amount currency and binding are accepted',()=>{const order={id:'order_one',paymentId:'pay_one',amount:12345},p={id:'pay_one',order_id:'order_one',amount:12345,currency:'INR',status:'captured',captured:true};assert.doesNotThrow(()=>assertCapturedPayment(p,order));for(const change of [{status:'authorized'},{amount:12344},{currency:'USD'},{order_id:'order_other'},{id:'pay_other'},{captured:false}])assert.throws(()=>assertCapturedPayment({...p,...change},order));});
+test('amount in paise and accounting date are deterministic',()=>{assert.equal(amountPaise(123.45),12345);for(const bad of [-1,0,NaN,Infinity,.5])assert.throws(()=>amountPaise(bad));assert.equal(paymentDate(Date.parse('2026-10-13T20:00:00Z')/1000),'2026-10-14');});

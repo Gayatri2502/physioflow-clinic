@@ -1,10 +1,7 @@
-Clinic integration checks use an in-memory SQLite database and mocked identity/document storage. They never contact the live clinic or change production records.
+# Clinic integration checks
 
-Run from the project root:
+Run `pnpm test:clinic`. The runner bundles the real API/domain code with an in-memory Firestore transaction double, mocked Google identity and private document storage. It does not contact live Firebase or external providers. Fixtures are isolated under this test directory and are not available to production routes.
 
-```
-node tests/integration/run-check.mjs
-node tests/integration/clinic-check.cjs
-```
+Coverage includes registration, appointments/conflicts, clinical visits and follow-up rescheduling, treatment/plan records, package consumption, schemes, invoicing/payment/refund reconciliation, advances/credit, cash closing, every report type, private/shared document access, all role boundaries, authentication rejection, stale writes, rollback and migration locks. Regression assertions cover invalid dates/times, numbering after deletions and closed-day invoice moves.
 
-Coverage includes role separation, medical-field preservation during reception edits, patient booking/rescheduling/cancellation, private and shared documents, clinical workflows, billing reconciliation, accounting controls, authentication and concurrent/stale writes.
+This verifies application behavior, not actual Firestore deployment/IAM, Google browser redirects, provider delivery or browser layout. These require emulator/sandbox and deployed end-to-end verification before activation.

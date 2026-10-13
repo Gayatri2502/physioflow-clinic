@@ -1,0 +1,8 @@
+import {build} from 'esbuild';
+import {execFileSync} from 'node:child_process';
+import {unlinkSync} from 'node:fs';
+await build({entryPoints:['tests/auth-session.ts'],outfile:'tests/auth-session.mjs',bundle:true,platform:'node',format:'esm',plugins:[{name:'auth-test',setup(b){
+ b.onResolve({filter:/next\/(headers|server|navigation)$/},args=>({path:args.path,namespace:'mock'}));
+ b.onResolve({filter:/firebase-admin$/},()=>({path:'admin',namespace:'mock'}));
+ b.onLoad({filter:/.*/,namespace:'mock'},args=>({loader:'js',contents:args.path==='next/headers'?`export async function cookies(){return {get:key=>globalThis.__authCookies.has(key)?{value:globalThis.__authCookies.get(key)}:undefined}}`:args.path==='next/navigation'?`export function redirect(path){throw new Error(path)}`:args.path==='next/server'?`export const NextResponse={json(body,options={}){const response=Response.json(body,options);response.cookieOptions={};response.cookies={set(key,value,opts){globalThis.__authCookies.set(key,value);response.cookieOptions[key]=opts}};return response;}}`:`export function getAdminAuth(){return {async verifyIdToken(token,check){if(token!=='valid'||!check)throw Error('invalid');return globalThis.__authToken},async createSessionCookie(){return 'server-session'},async verifySessionCookie(cookie,check){if(cookie!=='server-session'||!check||globalThis.__revoked)throw Error('revoked');return globalThis.__authToken},async revokeRefreshTokens(){globalThis.__revoked=true}}}`}));
+ }}]});try{execFileSync(process.execPath,['tests/auth-session.mjs'],{stdio:'inherit'});}finally{unlinkSync('tests/auth-session.mjs');}

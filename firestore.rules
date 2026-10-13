@@ -1,0 +1,7 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Clinic access is enforced by authenticated server APIs using Admin SDK.
+    match /{document=**} { allow read, write: if false; }
+  }
+}

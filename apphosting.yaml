@@ -1,0 +1,34 @@
+runConfig:
+  cpu: 1
+  memoryMiB: 512
+  minInstances: 0
+  maxInstances: 2
+  concurrency: 20
+env:
+  - variable: NEXT_PUBLIC_FIREBASE_API_KEY
+    value: "AIzaSyDrYKxRS5A_JwzSLOiGOPa3sVG_fCSaZzI"
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+    value: "physioflow-clinic-20261013.firebaseapp.com"
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+    value: "physioflow-clinic-20261013"
+    availability: [BUILD, RUNTIME]
+  - variable: NEXT_PUBLIC_FIREBASE_APP_ID
+    value: "1:804968877547:web:0fc65856948f25b749ddae"
+    availability: [BUILD, RUNTIME]
+  - variable: FIREBASE_PROJECT_ID
+    value: "physioflow-clinic-20261013"
+    availability: [BUILD, RUNTIME]
+  - variable: FIREBASE_STORAGE_BUCKET
+    value: "physioflow-clinic-20261013.firebasestorage.app"
+    availability: [BUILD, RUNTIME]
+  - variable: FIREBASE_DATABASE_ID
+    value: "(default)"
+    availability: [BUILD, RUNTIME]
+  - variable: FIREBASE_CLINIC_ID
+    value: "physioflow"
+    availability: [BUILD, RUNTIME]
+  - variable: CLINIC_OWNER_EMAIL
+    value: "alphacentauric.ai@gmail.com"
+    availability: [BUILD, RUNTIME]

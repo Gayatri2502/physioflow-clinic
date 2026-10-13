@@ -14,5 +14,5 @@ export const writable:Record<string,string[]>={
 'Accountant':['Billing','Payments','Schemes','Packages'],Patient:[]};
 export const canRead=(role:string,kind:string)=>Boolean(readable[role])&&(kind==='Settings'||kind==='Dashboard'||(['Accounting','Advances','CreditAllocations','RefundRequests','CashClosing'].includes(kind)&&(readable[role]||[]).includes('Payments')&&role!=='Patient')||(readable[role]||[]).includes(kind));
 export const canWrite=(role:string,kind:string)=>(writable[role]||[]).includes(kind);
-export const registrationFields=['Name','DOB','Gender','Phone','Address','Emergency Contact','Referral Doctor','Department','Therapist','Scheme','patientId','doctorId','departmentId'];
+export const registrationFields=['WhatsApp Consent','Voice Call Consent','Consent Date','Consent Evidence','Name','DOB','Gender','Phone','Address','Emergency Contact','Referral Doctor','Department','Therapist','Scheme','patientId','doctorId','departmentId'];
 export const roleHome=(role:string)=>role==='Patient'?'My care':role==='Receptionist'?'Reception desk':role==='Doctor / Physiotherapist'?'My clinical workspace':role==='Accountant'?'Accounts desk':'Clinic overview';

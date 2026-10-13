@@ -1,0 +1,476 @@
+{
+  "info": {
+    "name": "PhysioFlow API",
+    "description": "Firebase-authenticated clinic APIs. Sensitive variables are deliberately empty. Read-only by default; opt in to each mutation class. No external provider webhook is forged.",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    {
+      "key": "baseUrl",
+      "value": "http://localhost:3000",
+      "type": "string"
+    },
+    {
+      "key": "allowMutations",
+      "value": "false",
+      "type": "string"
+    },
+    {
+      "key": "allowExternalActions",
+      "value": "false",
+      "type": "string"
+    },
+    {
+      "key": "sessionCookie",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "firebaseIdToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "csrfToken",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "documentKey",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "recordKind",
+      "value": "Patients",
+      "type": "string"
+    },
+    {
+      "key": "recordName",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "recordPhone",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "recordId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "patientId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "appointmentId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "appointmentDate",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "appointmentTime",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "invoiceId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "orderId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "paymentId",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "paymentSignature",
+      "value": "",
+      "type": "string"
+    },
+    {
+      "key": "contactChannel",
+      "value": "voice",
+      "type": "string"
+    }
+  ],
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "if(!pm.collectionVariables.get('sessionCookie'))pm.request.headers.remove('Cookie');",
+          "const mutates=!['GET','HEAD'].includes(pm.request.method);",
+          "if(mutates&&pm.collectionVariables.get('allowMutations')!=='true')pm.execution.skipRequest();",
+          "if(pm.request.url.toString().includes('/api/communications')&&pm.collectionVariables.get('allowExternalActions')!=='true')pm.execution.skipRequest();",
+          "if(pm.request.url.toString().includes('/api/payments')&&pm.collectionVariables.get('allowExternalActions')!=='true')pm.execution.skipRequest();"
+        ]
+      }
+    }
+  ],
+  "item": [
+    {
+      "name": "Read-only checks",
+      "item": [
+        {
+          "name": "Load authorized clinic",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "physioflow_session={{sessionCookie}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/clinic"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Clinic responds without service errors',()=>pm.expect(pm.response.code).to.be.oneOf([200,401,403]));",
+                  "if(pm.response.code===200){const data=pm.response.json();pm.test('Records and assigned role returned',()=>{pm.expect(data.records).to.be.an('array');pm.expect(data.actor.role).to.be.a('string')});}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Integration enabled flags",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "physioflow_session={{sessionCookie}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/integrations"
+          }
+        },
+        {
+          "name": "Download authorized document",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "physioflow_session={{sessionCookie}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/documents?key={{documentKey}}"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Authentication \u2014 manual",
+      "item": [
+        {
+          "name": "Start CSRF session",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "physioflow_session={{sessionCookie}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/session"
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.collectionVariables.set('csrfToken',pm.response.json().csrfToken);"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Exchange verified Google ID token",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "physioflow_session={{sessionCookie}}"
+              },
+              {
+                "key": "Origin",
+                "value": "{{baseUrl}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/session",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idToken\": \"{{firebaseIdToken}}\",\n  \"csrfToken\": \"{{csrfToken}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Sign out and revoke sessions",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "physioflow_session={{sessionCookie}}"
+              },
+              {
+                "key": "Origin",
+                "value": "{{baseUrl}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/auth/session"
+          }
+        }
+      ]
+    },
+    {
+      "name": "Clinic changes \u2014 opt in on a test deployment",
+      "item": [
+        {
+          "name": "Create or update record",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "physioflow_session={{sessionCookie}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/clinic",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"kind\": \"{{recordKind}}\",\n  \"data\": {\n    \"Name\": \"{{recordName}}\",\n    \"Phone\": \"{{recordPhone}}\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Delete unlinked record",
+          "request": {
+            "method": "DELETE",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "physioflow_session={{sessionCookie}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/clinic",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"id\": \"{{recordId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Patient booking",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "physioflow_session={{sessionCookie}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/patient",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"book\",\n  \"date\": \"{{appointmentDate}}\",\n  \"time\": \"{{appointmentTime}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Accounting advance",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "physioflow_session={{sessionCookie}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/accounting",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"advance\",\n  \"patientId\": \"{{patientId}}\",\n  \"amount\": 100,\n  \"method\": \"Cash\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Clear marked legacy samples",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "physioflow_session={{sessionCookie}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/clinic/bootstrap",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"empty\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    },
+    {
+      "name": "External integrations \u2014 manual only",
+      "item": [
+        {
+          "name": "Create Razorpay order",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "physioflow_session={{sessionCookie}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/payments/razorpay/orders",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"invoiceId\": \"{{invoiceId}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Verify completed checkout",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "physioflow_session={{sessionCookie}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/payments/razorpay/verify",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"orderId\": \"{{orderId}}\",\n  \"paymentId\": \"{{paymentId}}\",\n  \"signature\": \"{{paymentSignature}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        },
+        {
+          "name": "Request approved appointment contact",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "physioflow_session={{sessionCookie}}"
+              },
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              }
+            ],
+            "url": "{{baseUrl}}/api/communications",
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"appointmentId\": \"{{appointmentId}}\",\n  \"channel\": \"{{contactChannel}}\",\n  \"confirmed\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            }
+          }
+        }
+      ]
+    }
+  ]
+}

@@ -1,2 +1,2 @@
-import DemoLogin from '../../components/erp/demo-login';
-export default function Page(){return <DemoLogin/>;}
+import ClinicLogin from '../../components/erp/clinic-login';
+export default async function Page({searchParams}:{searchParams:Promise<{return_to?:string}>}){const {return_to}=await searchParams;return <ClinicLogin returnTo={return_to}/>;}

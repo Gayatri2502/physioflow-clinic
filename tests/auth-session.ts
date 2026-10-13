@@ -1,0 +1,17 @@
+import assert from 'node:assert/strict';
+import {GET,POST,DELETE} from '../app/api/auth/session/route';
+import {getFirebaseUser} from '../app/firebase-auth';
+import {SESSION_COOKIE,CSRF_COOKIE} from '../services/auth/policy';
+const state=globalThis as any;
+state.__authCookies=new Map();state.__revoked=false;
+state.__authToken={uid:'google-staff',email:'staff@example.com',email_verified:true,auth_time:Math.floor(Date.now()/1000),firebase:{sign_in_provider:'google.com'}};
+const req=(body:any,origin='https://clinic.example')=>new Request('https://clinic.example/api/auth/session',{method:'POST',headers:{origin,'Content-Type':'application/json'},body:JSON.stringify(body)});
+assert.equal((await POST(req(null))).status,400);
+const csrf:any=await GET();assert.equal(csrf.status,200);const csrfToken=(await csrf.json()).csrfToken;
+assert.equal((await POST(req({idToken:'valid',csrfToken},'https://evil.example'))).status,403);
+assert.equal((await POST(req({idToken:'valid',csrfToken:'wrong'}))).status,403);
+state.__authToken.email_verified=false;assert.equal((await POST(req({idToken:'valid',csrfToken}))).status,401);state.__authToken.email_verified=true;
+const loggedIn:any=await POST(req({idToken:'valid',csrfToken}));assert.equal(loggedIn.status,200);assert.equal(loggedIn.cookieOptions[SESSION_COOKIE].httpOnly,true);assert.equal(loggedIn.cookieOptions[SESSION_COOKIE].sameSite,'strict');
+assert.equal((await getFirebaseUser())?.userId,'google-staff');state.__revoked=true;assert.equal(await getFirebaseUser(),null);state.__revoked=false;
+assert.equal((await DELETE(new Request('https://clinic.example/api/auth/session',{method:'DELETE',headers:{origin:'https://clinic.example'}}))).status,200);assert.equal(state.__revoked,true);assert.equal(await getFirebaseUser(),null);
+console.log('Auth session: invalid origin/CSRF/unverified user denied; valid session, revoked-session rejection and sign-out passed.');

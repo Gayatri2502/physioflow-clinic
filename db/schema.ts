@@ -1,9 +1,28 @@
-import {sql} from 'drizzle-orm';
-import { sqliteTable, text, integer, index, check } from "drizzle-orm/sqlite-core";
-export const records = sqliteTable("records", { id: text("id").primaryKey(), owner: text("owner").notNull(), kind: text("kind").notNull(), data: text("data").notNull(), created: text("created").notNull() }, (t)=>[index("idx_records_owner_created").on(t.owner,t.created)]);
-export const audits = sqliteTable("audits", { id: text("id").primaryKey(), owner: text("owner").notNull(), action: text("action").notNull(), recordId: text("record_id").notNull(), created: text("created").notNull() });
-export const clinic = sqliteTable('clinic', {id:text('id').primaryKey(),owner:text('owner').notNull(),email:text('email').notNull()});
-export const links = sqliteTable('record_links', {id:text('id').primaryKey(),owner:text('owner').notNull(),source:text('source').notNull().references(()=>records.id,{onDelete:'cascade'}),target:text('target').notNull().references(()=>records.id,{onDelete:'restrict'}),relation:text('relation').notNull()},t=>[index('idx_record_links_target').on(t.target),index('idx_record_links_source').on(t.source)]);
+import type { ClinicRecord } from '../types/clinic';
 
-export const revisions=sqliteTable('clinic_revisions',{owner:text('owner').primaryKey(),version:integer('version').notNull().default(0)});
-export const guards=sqliteTable('mutation_guards',{id:text('id').primaryKey(),passed:integer('passed').notNull()},t=>[check('mutation_requires_current_revision',sql`${t.passed}=1`)]);
+/** Native Firestore: clinics/{stableClinicId}, with records and audits subcollections.
+ * Record references live in data.*Id and are validated by domain workflows.
+ * Browser access is denied; every request uses the server's clinic-role boundary.
+ */
+export type ClinicDocument = { owner: string; email: string; version: number; created: string };
+export type AuditDocument = { id: string; owner: string; action: string; record_id: string; created: string };
+export type StoredRecord = ClinicRecord;
+export type Mutation =
+  | { type: 'put'; record: ClinicRecord }
+  | { type: 'delete'; id: string }
+  | { type: 'counter'; field: 'patientSequence' | 'invoiceSequence'; value: number }
+  | { type: 'audit'; audit: Omit<AuditDocument, 'owner'> };
+
+export const putRecord = (record: ClinicRecord): Mutation => ({ type: 'put', record });
+export const deleteRecord = (id: string): Mutation => ({ type: 'delete', id });
+export const auditRecord = (action: string, recordId: string, created = new Date().toISOString()): Mutation => ({
+  type: 'audit', audit: { id: crypto.randomUUID(), action, record_id: recordId, created },
+});
+export function clinicId() {
+  const id = process.env.FIREBASE_CLINIC_ID || 'physioflow';
+  assertDocumentId(id);
+  return id;
+}
+export function assertDocumentId(id: string) {
+  if (!id || id.includes('/') || id === '.' || id === '..' || /^__.*__$/.test(id)) throw new Error('Invalid document identifier.');
+}

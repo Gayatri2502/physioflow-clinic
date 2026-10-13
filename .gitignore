@@ -46,3 +46,10 @@ next-env.d.ts
 /work/
 
 /tests/integration/clinic-check.cjs
+
+# Public configuration template; runtime secrets remain ignored.
+!.env.example
+*.tsbuildinfo
+/firebase-debug.log
+/firestore-debug.log
+/ui-debug.log

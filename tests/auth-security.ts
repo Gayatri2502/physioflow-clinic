@@ -1,0 +1,11 @@
+import assert from 'node:assert/strict';
+import {isGoogleIdentity,isRecentSignIn,safeReturnPath,validCsrf,validOrigin} from '../services/auth/policy';
+assert.equal(isGoogleIdentity({email:'staff@example.com',email_verified:true,firebase:{sign_in_provider:'google.com'}}),true);
+for(const token of [{email:'staff@example.com',email_verified:false,firebase:{sign_in_provider:'google.com'}},{email:'staff@example.com',email_verified:true,firebase:{sign_in_provider:'password'}},{}])assert.equal(isGoogleIdentity(token),false);
+assert.equal(isRecentSignIn(1000,1200),true);assert.equal(isRecentSignIn(1000,1400),false);assert.equal(isRecentSignIn(1500,1200),false);
+for(const value of ['https://evil.example','//evil.example','/\\evil.example','/sign-out','/api/auth/session'])assert.equal(safeReturnPath(value),'/');
+assert.equal(safeReturnPath('/role-entry?role=patient'),'/role-entry?role=patient');
+assert.equal(validCsrf('a'.repeat(64),'a'.repeat(64)),true);assert.equal(validCsrf(undefined,undefined),false);assert.equal(validCsrf('a'.repeat(64),'b'.repeat(64)),false);
+assert.equal(validOrigin(new Request('https://clinic.example/api/auth/session',{headers:{origin:'https://evil.example'}})),false);
+assert.equal(validOrigin(new Request('https://clinic.example/api/auth/session',{headers:{origin:'https://clinic.example'}})),true);
+console.log('Auth security policy: verified Google identity, fresh login, CSRF, same origin and redirect checks passed.');

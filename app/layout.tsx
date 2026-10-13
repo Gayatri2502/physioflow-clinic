@@ -5,9 +5,6 @@ import {AppearanceProvider} from "../components/erp/appearance";
 export const metadata: Metadata = {
   title: "PhysioFlow | Clinic ERP",
   description: "Physiotherapy clinic management workspace",
-  other: {
-    "codex-preview": "development",
-  },
   icons: {
     icon: "/favicon.svg",
     shortcut: "/favicon.svg",

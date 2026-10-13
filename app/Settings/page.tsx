@@ -1,2 +1,3 @@
-import Workspace from '../../components/erp/workspace';
-export default function Page(){return <Workspace module="Settings"/>;}
+import ProtectedWorkspace from '../protected-workspace';
+export const dynamic='force-dynamic';
+export default function Page(){return <ProtectedWorkspace module="Settings"/>;}
