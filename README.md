@@ -14,7 +14,7 @@ Run `pnpm dev` to serve on localhost. `pnpm build` and `pnpm start` run the stan
 
 ## Firebase and deployment
 
-The project and web app are registered under `physioflow-clinic-20261013`; Google sign-in is enabled. Firestore database provisioning, Storage bucket creation, and App Hosting deployment are separate setup steps. See `docs/SETUP-CHECKLIST.md`. The new application is not yet deployed and the original Sites website is unchanged.
+The project and web app are registered under `physioflow-clinic-20261013`; Google sign-in is enabled. The Standard Native Firestore database is provisioned in Mumbai (`asia-south1`), with rules and indexes deployed. Storage bucket creation and App Hosting deployment remain separate setup steps. See `docs/SETUP-CHECKLIST.md`. The new application is not yet deployed and the original Sites website is unchanged.
 
 `apphosting.yaml` supplies public project configuration and bounded scaling. Use Firebase App Hosting Secret Manager references for payment/communications secrets; never put private keys in public environment variables. App Hosting and Firebase Storage need the Blaze plan. Billing must be explicitly enabled by the project owner before those resources are activated.
 

@@ -1,6 +1,6 @@
 # Firebase data model
 
-The selected application uses Native Firestore Admin SDK transactions. Its read/write API is compatible with Standard Firestore and Enterprise Native; the remote database edition and location must be approved before provisioning. No collections need to be created with dummy documents: Firestore materializes a collection when the first authorized record is written.
+The application uses Native Firestore Admin SDK transactions against the approved Standard database in Mumbai (`asia-south1`). The database and deny-direct-client rules/indexes are deployed. No collections need to be created with dummy documents: Firestore materializes a collection when the first authorized record is written.
 
 | Path | Contents |
 |---|---|

@@ -5,9 +5,9 @@ Prepared 13 October 2026. The application code is implemented; provider activati
 ## 1. Firebase database, documents and hosting
 
 - Open [PhysioFlow Firebase](https://console.firebase.google.com/project/physioflow-clinic-20261013/overview). The project/web app exist and Google sign-in is enabled.
-- Confirm the database edition and location. Standard Firestore in Mumbai (`asia-south1`) is sufficient for the current application. Provisioning has not completed: automatic approval review rejected the earlier Enterprise/Mumbai choice because its edition/location were not explicitly selected.
+- Completed: you approved Standard Firestore in Mumbai (`asia-south1`); the database was provisioned and its database rules/indexes deployed. No patient or demo records were added.
 - If you want Firebase App Hosting and Firebase Storage, [enable the Blaze plan](https://console.firebase.google.com/project/physioflow-clinic-20261013/overview?purchaseBillingPlan=metered). This links billing and permits usage charges; only the account owner should make that billing decision. Configure billing budget alerts.
-- Provision the approved Firestore database and private Storage bucket. Deploy the repository's `firestore.rules` and `storage.rules`; do not use open/test-mode rules.
+- Remaining: provision the private Storage bucket after billing setup and deploy `storage.rules`. Firestore rules are already deployed; do not replace them with open/test-mode rules.
 - Create an App Hosting backend from `Gayatri2502/physioflow-clinic`. Use the repo root and the tracked `apphosting.yaml`. Add its actual serving domain to Firebase Authentication authorized domains. Configure the runtime service account's required Firebase access and use application default credentials.
 - Keep the new clinic empty. No demo data should be imported. First test owner Google sign-in/sign-out, empty settings, and denied access for an unassigned Google account. Only then create approved synthetic test records to verify sync.
 - The original Sites website remains unchanged. Its old sample records have not been cleared live; the migration code removes demo routes/fallbacks and has an owner-only endpoint for clearing explicitly marked legacy sample records without deleting real records.

@@ -14,7 +14,9 @@
   },
   "firestore": {
     "rules": "firestore.rules",
-    "indexes": "firestore.indexes.json"
+    "indexes": "firestore.indexes.json",
+    "database": "(default)",
+    "location": "asia-south1"
   },
   "storage": {
     "rules": "storage.rules"
