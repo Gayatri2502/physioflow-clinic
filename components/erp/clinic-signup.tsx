@@ -1,0 +1,8 @@
+'use client';
+import {useState} from 'react';
+import {clinicRoles} from '../../services/auth/roles';
+export default function ClinicSignup({email,request}:{email:string;request:any}){
+ const [role,setRole]=useState('patient'),[status,setStatus]=useState(request?.status||''),[busy,setBusy]=useState(false),[error,setError]=useState('');
+ async function submit(){setBusy(true);setError('');try{const r=await fetch('/api/auth/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({role})});const d=await r.json();if(!r.ok)throw Error(d.error);setStatus(d.status)}catch(e){setError((e as Error).message)}finally{setBusy(false)}}
+ return <main className="login-page"><section className="panel login-card"><h1>Request clinic access</h1><p>Signed in as {email}</p>{status?<p role="status">{status==='pending'?'Your request is waiting for the clinic owner to approve.':status==='approved'?'Your access request is approved. Sign in using your assigned role.':'Your request was declined. Contact clinic reception for assistance.'}</p>:<><p>Select the role you need. The clinic owner verifies your identity and assigns access; choosing a role does not grant permissions.</p><label>Requested role<select value={role} onChange={e=>setRole(e.target.value)}>{clinicRoles.filter(x=>x.key!=='super-admin').map(x=><option key={x.key} value={x.key}>{x.role}</option>)}</select></label><button className="button primary" disabled={busy} onClick={submit}>Submit access request</button></>}{error&&<p role="alert">{error}</p>}<a href="/login">Back to sign in</a><p><a href="/sign-out">Sign out</a></p></section></main>
+}
