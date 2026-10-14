@@ -5,6 +5,18 @@ runConfig:
   maxInstances: 2
   concurrency: 20
 env:
+  - variable: RAZORPAY_ENABLED
+    value: "false"
+    availability: [RUNTIME]
+  - variable: VAPI_ENABLED
+    value: "false"
+    availability: [RUNTIME]
+  - variable: WHATSAPP_ENABLED
+    value: "false"
+    availability: [RUNTIME]
+  - variable: WHATSAPP_AUTOMATIC_REMINDERS_ENABLED
+    value: "false"
+    availability: [RUNTIME]
   - variable: NEXT_PUBLIC_FIREBASE_API_KEY
     value: "AIzaSyDrYKxRS5A_JwzSLOiGOPa3sVG_fCSaZzI"
     availability: [BUILD, RUNTIME]
