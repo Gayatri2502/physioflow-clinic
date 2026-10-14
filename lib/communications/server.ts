@@ -1,3 +1,4 @@
+import {appointmentTemplate} from './template-registry';
 import {createHash} from 'node:crypto';
 import {getFirestore} from '../firebase-admin';
 import {actor, ClinicError} from '../../services/server';
@@ -9,7 +10,7 @@ const digest = (value: string) => createHash('sha256').update(value).digest('hex
 export function communicationsConfig() {
  return {
   voice: {enabled: process.env.VAPI_ENABLED === 'true' && Boolean(process.env.VAPI_PRIVATE_KEY && process.env.VAPI_ASSISTANT_ID && process.env.VAPI_PHONE_NUMBER_ID), key: process.env.VAPI_PRIVATE_KEY || '', assistantId: process.env.VAPI_ASSISTANT_ID || '', phoneNumberId: process.env.VAPI_PHONE_NUMBER_ID || ''},
-  whatsapp: {enabled: process.env.WHATSAPP_ENABLED === 'true' && Boolean(process.env.WHATSAPP_ACCESS_TOKEN && process.env.WHATSAPP_PHONE_NUMBER_ID && process.env.WHATSAPP_REMINDER_TEMPLATE && /^v\d+\.\d+$/.test(process.env.WHATSAPP_GRAPH_VERSION || '')), key: process.env.WHATSAPP_ACCESS_TOKEN || '', phoneNumberId: process.env.WHATSAPP_PHONE_NUMBER_ID || '', template: process.env.WHATSAPP_REMINDER_TEMPLATE || '', language: process.env.WHATSAPP_TEMPLATE_LANGUAGE || 'en', version: process.env.WHATSAPP_GRAPH_VERSION || '', businessAccountId: process.env.WHATSAPP_BUSINESS_ACCOUNT_ID || ''},
+  whatsapp: {enabled: process.env.WHATSAPP_ENABLED === 'true' && Boolean(process.env.WHATSAPP_ACCESS_TOKEN && process.env.WHATSAPP_PHONE_NUMBER_ID && /^v\d+\.\d+$/.test(process.env.WHATSAPP_GRAPH_VERSION || '')), key: process.env.WHATSAPP_ACCESS_TOKEN || '', phoneNumberId: process.env.WHATSAPP_PHONE_NUMBER_ID || '', template: 'physioflow_appointment_reminder_v1', language: process.env.WHATSAPP_TEMPLATE_LANGUAGE || 'en', version: process.env.WHATSAPP_GRAPH_VERSION || '', businessAccountId: process.env.WHATSAPP_BUSINESS_ACCOUNT_ID || ''},
  };
 }
 export function whatsappTrackingEnabled() {
@@ -38,6 +39,7 @@ async function sendContact(owner: string, appointmentId: string, channel: Channe
  const config = communicationsConfig()[channel];
  if (!config.enabled) throw new ClinicError(channel === 'voice' ? 'Voice calls need Vapi configuration.' : 'WhatsApp reminders need an approved Meta template and account configuration.', 503);
  const db = getFirestore(), clinic = db.collection('clinics').doc(owner), records = clinic.collection('records');
+ if(channel==='whatsapp'){try{appointmentTemplate('+919999999999','2030-01-01','10:00');}catch(e){throw new ClinicError((e as Error).message,503);}}
  const reservation = await db.runTransaction(async tx => {
   ensureClinic(await tx.get(clinic));
   const appointmentDoc = await tx.get(records.doc(appointmentId));
@@ -80,7 +82,7 @@ async function sendContact(owner: string, appointmentId: string, channel: Channe
  }
  try {
   const url = channel === 'voice' ? 'https://api.vapi.ai/call' : `https://graph.facebook.com/${communicationsConfig().whatsapp.version}/${encodeURIComponent(config.phoneNumberId)}/messages`;
-  const response = await fetch(url, {method: 'POST', headers: {Authorization: 'Bearer ' + config.key, 'Content-Type': 'application/json'}, body: JSON.stringify(contactPayload(channel, reservation.appointment, reservation.number, config)), signal: AbortSignal.timeout(15000)});
+  const response = await fetch(url, {method: 'POST', headers: {Authorization: 'Bearer ' + config.key, 'Content-Type': 'application/json'}, body: JSON.stringify(channel==='whatsapp'?appointmentTemplate(reservation.number,reservation.appointment.data.Date,reservation.appointment.data.Time):contactPayload(channel, reservation.appointment, reservation.number, config)), signal: AbortSignal.timeout(15000)});
   if (!response.ok) throw new Error('Provider rejected the request.');
   const result: any = await response.json(), providerId = channel === 'voice' ? result.id : result.messages?.[0]?.id;
   if (typeof providerId !== 'string' || !providerId || providerId.length > 512) throw new Error('Missing provider identifier.');

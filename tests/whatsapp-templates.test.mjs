@@ -1,0 +1,6 @@
+import test from 'node:test';import assert from 'node:assert/strict';
+import {clinicTemplates,templatePayload} from '../lib/communications/templates.mjs';
+const definition={...clinicTemplates.appointment_reminder,status:'APPROVED',components:[{type:'BODY',text:'Appointment {{1}} at {{2}}'}]};
+test('sixteen clinic event mappings use submitted names',()=>{assert.equal(Object.keys(clinicTemplates).length,16);assert.equal(clinicTemplates.appointment_reminder.name,'physioflow_appointment_reminder_v1');});
+test('exact approved body parameter contract; no arbitrary templates',()=>{assert.equal(templatePayload('appointment_reminder','+919999999999',['2030-01-01','10:00'],definition).template.components[0].parameters.length,2);for(const d of [{...definition,status:'PENDING'},{...definition,name:'another_template'},{...definition,components:[{type:'HEADER'}]}])assert.throws(()=>templatePayload('appointment_reminder','+919999999999',['a','b'],d));assert.throws(()=>templatePayload('appointment_reminder','+919999999999',['a'],definition));});
+test('Meta reclassification to marketing requires separate opt-in',()=>{assert.throws(()=>templatePayload('appointment_reminder','+919999999999',['a','b'],{...definition,category:'MARKETING'}));});

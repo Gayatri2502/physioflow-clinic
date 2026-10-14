@@ -3,8 +3,9 @@ import {execFileSync} from 'node:child_process';
 import {unlinkSync} from 'node:fs';
 const outfile = 'tests/integration/reminder-check.cjs';
 await build({entryPoints: ['tests/integration/reminder-check.ts'], outfile, bundle: true, platform: 'node', format: 'cjs', plugins: [{name: 'reminder-test-runtime', setup(b) {
+ b.onResolve({filter: /template-registry$/}, () => ({path: 'templates', namespace: 'test'}));
  b.onResolve({filter: /firebase-admin$/}, () => ({path: 'admin', namespace: 'test'}));
  b.onResolve({filter: /services\/server$/}, () => ({path: 'actor', namespace: 'test'}));
- b.onLoad({filter: /.*/, namespace: 'test'}, args => ({contents: args.path === 'admin' ? `export const getFirestore=()=>globalThis.__firestore;` : `export class ClinicError extends Error {constructor(message,status=400){super(message);this.status=status}}; export async function actor(){if(!globalThis.__actor)throw new ClinicError('Sign in',401);return globalThis.__actor} export function fail(e){return Response.json({error:e instanceof ClinicError?e.message:'Service unavailable'},{status:e instanceof ClinicError?e.status:503})}`, loader: 'js'}));
+ b.onLoad({filter: /.*/, namespace: 'test'}, args => ({contents: args.path === 'templates' ? `export function appointmentTemplate(number,date,time){return {messaging_product:'whatsapp',to:number.slice(1),type:'template',template:{name:'test_reminder',language:{code:'en'},components:[{type:'body',parameters:[{type:'text',text:date},{type:'text',text:time}]}]}}}` : args.path === 'admin' ? `export const getFirestore=()=>globalThis.__firestore;` : `export class ClinicError extends Error {constructor(message,status=400){super(message);this.status=status}}; export async function actor(){if(!globalThis.__actor)throw new ClinicError('Sign in',401);return globalThis.__actor} export function fail(e){return Response.json({error:e instanceof ClinicError?e.message:'Service unavailable'},{status:e instanceof ClinicError?e.status:503})}`, loader: 'js'}));
 }}]});
 try {execFileSync(process.execPath, [outfile], {stdio: 'inherit'});} finally {unlinkSync(outfile);}
