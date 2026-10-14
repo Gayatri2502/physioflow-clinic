@@ -1,0 +1,40 @@
+services:
+  - type: web
+    name: physioflow-clinic
+    runtime: node
+    plan: free
+    branch: main
+    buildCommand: corepack enable && pnpm install --frozen-lockfile && pnpm build
+    startCommand: pnpm exec next start --hostname 0.0.0.0 --port $PORT
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: 22.22.0
+      - key: NEXT_TELEMETRY_DISABLED
+        value: '1'
+      - key: NEXT_PUBLIC_FIREBASE_API_KEY
+        sync: false
+      - key: NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN
+        value: physioflow-clinic-20261013.firebaseapp.com
+      - key: NEXT_PUBLIC_FIREBASE_PROJECT_ID
+        value: physioflow-clinic-20261013
+      - key: NEXT_PUBLIC_FIREBASE_APP_ID
+        sync: false
+      - key: FIREBASE_PROJECT_ID
+        value: physioflow-clinic-20261013
+      - key: FIREBASE_DATABASE_ID
+        value: '(default)'
+      - key: FIREBASE_CLINIC_ID
+        value: physioflow
+      - key: CLINIC_OWNER_EMAIL
+        value: alphacentauric.ai@gmail.com
+      - key: FIREBASE_SERVICE_ACCOUNT_JSON
+        sync: false
+      - key: RAZORPAY_ENABLED
+        value: 'false'
+      - key: VAPI_ENABLED
+        value: 'false'
+      - key: WHATSAPP_ENABLED
+        value: 'false'
+      - key: WHATSAPP_AUTOMATIC_REMINDERS_ENABLED
+        value: 'false'
