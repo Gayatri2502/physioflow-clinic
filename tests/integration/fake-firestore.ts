@@ -11,10 +11,10 @@ export class FakeFirestore {
 class Snapshot { constructor(public ref:Document,private value:any){} get id(){return this.ref.id} get exists(){return this.value!==undefined} data(){return clone(this.value)} }
 class Query {
  constructor(public db:FakeFirestore,public path:string,private filters:any[]=[],private sort?:[string,string],private count?:number){}
- where(field:string,op:string,value:any){if(op!=='==')throw Error('Unsupported test query');return new Query(this.db,this.path,[...this.filters,[field,value]],this.sort,this.count)}
+ where(field:string,op:string,value:any){if(!['==','<='].includes(op))throw Error('Unsupported test query');return new Query(this.db,this.path,[...this.filters,[field,value,op]],this.sort,this.count)}
  orderBy(field:string,direction='asc'){return new Query(this.db,this.path,this.filters,[field,direction],this.count)}
  limit(count:number){return new Query(this.db,this.path,this.filters,this.sort,count)}
- async get(){const prefix=this.path+'/';let docs=[...this.db.store].filter(([path,value])=>path.startsWith(prefix)&&!path.slice(prefix.length).includes('/')&&this.filters.every(([field,expected])=>value[field]===expected)).map(([path,value])=>new Snapshot(new Document(this.db,path),value));if(this.sort){const [field,dir]=this.sort;docs.sort((a,b)=>String(a.data()[field]).localeCompare(String(b.data()[field]))*(dir==='desc'?-1:1));}if(this.count!==undefined)docs=docs.slice(0,this.count);return {docs,empty:docs.length===0,size:docs.length};}
+ async get(){const prefix=this.path+'/';let docs=[...this.db.store].filter(([path,value])=>path.startsWith(prefix)&&!path.slice(prefix.length).includes('/')&&this.filters.every(([field,expected,op])=>{const actual=field.split('.').reduce((v:any,key:string)=>v?.[key],value);return op==='=='?actual===expected:actual!==undefined&&actual<=expected})).map(([path,value])=>new Snapshot(new Document(this.db,path),value));if(this.sort){const [field,dir]=this.sort;docs.sort((a,b)=>String(a.data()[field]).localeCompare(String(b.data()[field]))*(dir==='desc'?-1:1));}if(this.count!==undefined)docs=docs.slice(0,this.count);return {docs,empty:docs.length===0,size:docs.length};}
 }
 class Collection extends Query {doc(id=randomUUID()){return new Document(this.db,this.path+'/'+id)} async add(value:any){const doc=this.doc();await doc.create(value);return doc}}
 class Document {

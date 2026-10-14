@@ -104,6 +104,11 @@
       "key": "contactChannel",
       "value": "voice",
       "type": "string"
+    },
+    {
+      "key": "reminderJobSecret",
+      "value": "",
+      "type": "string"
     }
   ],
   "event": [
@@ -115,7 +120,7 @@
           "if(!pm.collectionVariables.get('sessionCookie'))pm.request.headers.remove('Cookie');",
           "const mutates=!['GET','HEAD'].includes(pm.request.method);",
           "if(mutates&&pm.collectionVariables.get('allowMutations')!=='true')pm.execution.skipRequest();",
-          "if(pm.request.url.toString().includes('/api/communications')&&pm.collectionVariables.get('allowExternalActions')!=='true')pm.execution.skipRequest();",
+          "if(mutates&&pm.request.url.toString().includes('/api/communications')&&pm.collectionVariables.get('allowExternalActions')!=='true')pm.execution.skipRequest();",
           "if(pm.request.url.toString().includes('/api/payments')&&pm.collectionVariables.get('allowExternalActions')!=='true')pm.execution.skipRequest();"
         ]
       }
@@ -174,6 +179,19 @@
               }
             ],
             "url": "{{baseUrl}}/api/documents?key={{documentKey}}"
+          }
+        },
+        {
+          "name": "Appointment reminder history",
+          "request": {
+            "method": "GET",
+            "header": [
+              {
+                "key": "Cookie",
+                "value": "physioflow_session={{sessionCookie}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/communications?appointmentId={{appointmentId}}"
           }
         }
       ]
@@ -469,6 +487,20 @@
               }
             }
           }
+        },
+        {
+          "name": "Run protected reminder job \u2014 external actions opt-in",
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Authorization",
+                "value": "Bearer {{reminderJobSecret}}"
+              }
+            ],
+            "url": "{{baseUrl}}/api/communications/reminders"
+          },
+          "description": "Disabled by default; may send real approved WhatsApp templates if server automation is enabled. Configure the separate job secret locally; never export it."
         }
       ]
     }

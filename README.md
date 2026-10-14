@@ -16,7 +16,7 @@ Run `pnpm dev` to serve on localhost. `pnpm build` and `pnpm start` run the stan
 
 The project and web app are registered under `physioflow-clinic-20261013`; Google sign-in is enabled. The Standard Native Firestore database is provisioned in Mumbai (`asia-south1`), with rules and indexes deployed. Storage bucket creation and App Hosting deployment remain separate setup steps. See `docs/SETUP-CHECKLIST.md`. The new application is not yet deployed and the original Sites website is unchanged.
 
-`apphosting.yaml` supplies public project configuration and bounded scaling. Use Firebase App Hosting Secret Manager references for payment/communications secrets; never put private keys in public environment variables. App Hosting and Firebase Storage need the Blaze plan. Billing must be explicitly enabled by the project owner before those resources are activated.
+`apphosting.yaml` supplies public project configuration and bounded scaling. Use Firebase App Hosting Secret Manager references for payment/communications secrets; never put private keys in public environment variables. App Hosting and Firebase Storage need the Blaze plan. The owner chose to keep Firebase billing disabled; neither service is activated. A Node hosting choice is still pending.
 
 `firestore.rules` and `storage.rules` deny all direct client access. The Next.js server uses Firebase Admin and applies clinic membership and role checks on every protected operation. These rules do not constrain the Admin SDK, so server authorization and service-account IAM are essential. Protected pages redirect to Google sign-in, and unknown/unassigned users cannot read clinic records.
 
@@ -32,4 +32,4 @@ Import `postman/PhysioFlow.postman_collection.json` into Postman. Read-only chec
 
 ## Payments and reminders
 
-See `docs/PAYMENTS-AND-COMMUNICATIONS.md`. Razorpay is reconciled only after server-side signature/capture verification and an idempotent transaction. A captured payment that cannot be posted requires reconciliation, not an automatic second payment attempt. Vapi and WhatsApp require recorded channel-specific patient consent and a deliberate staff confirmation. API acceptance does not establish delivery. No automatic reminder scheduler, WhatsApp calls, or payment-provider refunds are implemented.
+See `docs/PAYMENTS-AND-COMMUNICATIONS.md`. Razorpay is reconciled only after server-side signature/capture verification and an idempotent transaction. A captured payment that cannot be posted requires reconciliation, not an automatic second payment attempt. Vapi calls and manual WhatsApp sends require deliberate staff confirmation; every contact requires recorded channel-specific patient consent. The disabled-by-default WhatsApp scheduler and signed delivery tracking are documented in `docs/AUTOMATIC-REMINDERS.md`. API acceptance does not establish delivery. WhatsApp calls and payment-provider refunds remain pending.

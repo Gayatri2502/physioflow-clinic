@@ -1,14 +1,14 @@
 # Your provider setup tasks
 
-Prepared 13 October 2026. The application code is implemented; provider activation and live end-to-end checks remain separate steps. Do not paste private keys into chat or GitHub.
+Updated 14 October 2026. The application code is implemented; provider activation and live end-to-end checks remain separate steps. Do not paste private keys into chat or GitHub.
 
 ## 1. Firebase database, documents and hosting
 
 - Open [PhysioFlow Firebase](https://console.firebase.google.com/project/physioflow-clinic-20261013/overview). The project/web app exist and Google sign-in is enabled.
 - Completed: you approved Standard Firestore in Mumbai (`asia-south1`); the database was provisioned and its database rules/indexes deployed. No patient or demo records were added.
-- If you want Firebase App Hosting and Firebase Storage, [enable the Blaze plan](https://console.firebase.google.com/project/physioflow-clinic-20261013/overview?purchaseBillingPlan=metered). This links billing and permits usage charges; only the account owner should make that billing decision. Configure billing budget alerts.
-- Remaining: provision the private Storage bucket after billing setup and deploy `storage.rules`. Firestore rules are already deployed; do not replace them with open/test-mode rules.
-- Create an App Hosting backend from `Gayatri2502/physioflow-clinic`. Use the repo root and the tracked `apphosting.yaml`. Add its actual serving domain to Firebase Authentication authorized domains. Configure the runtime service account's required Firebase access and use application default credentials.
+- The owner chose to **keep Firebase billing disabled**. App Hosting and Firebase Storage remain inactive. Selecting a compatible Node host and document-storage option is a separate pending case.
+- Deferred while billing stays disabled: private Firebase Storage and its `storage.rules` deployment. Firestore rules are already deployed; do not replace them with open/test-mode rules.
+- After a hosting option is selected, deploy `Gayatri2502/physioflow-clinic`, add the actual serving domain to Firebase Authentication authorized domains and configure server-only Firebase Admin credentials/IAM. No paid Firebase hosting resource has been provisioned.
 - Keep the new clinic empty. No demo data should be imported. First test owner Google sign-in/sign-out, empty settings, and denied access for an unassigned Google account. Only then create approved synthetic test records to verify sync.
 - The original Sites website remains unchanged. Its old sample records have not been cleared live; the migration code removes demo routes/fallbacks and has an owner-only endpoint for clearing explicitly marked legacy sample records without deleting real records.
 
@@ -42,7 +42,7 @@ References: [Outbound calls](https://docs.vapi.ai/calls/outbound-calling), [Crea
 - Have Meta approve a utility appointment-reminder template with **two text body parameters: appointment date, then appointment time**. Select its language.
 - Configure `WHATSAPP_PHONE_NUMBER_ID`, `WHATSAPP_GRAPH_VERSION`, `WHATSAPP_REMINDER_TEMPLATE` and `WHATSAPP_TEMPLATE_LANGUAGE`; keep `WHATSAPP_ENABLED=false` until testing.
 - Record patient `WhatsApp Consent=Yes` plus consent date/evidence. Confirm one template send to an owned test number. Review message delivery separately.
-- WhatsApp calling, automatic scheduling, delivery-status callbacks and bulk campaigns are not implemented here. Vapi's dashboard link does not provide Meta WhatsApp credentials.
+- Completed in code: disabled automatic reminder scheduling, signed delivery-status callbacks and staff request history. Follow [Automatic reminders setup](AUTOMATIC-REMINDERS.md) for the app secret, business account ID, verification token and protected external cron. Live activation awaits configured hosting, Meta credentials/template and an owned-number sandbox test. WhatsApp calling and bulk campaigns remain pending. Vapi's dashboard link does not provide Meta WhatsApp credentials.
 
 Reference: [Meta's WhatsApp API documentation](https://www.postman.com/meta/whatsapp-business-platform/documentation/wlk6lh4/whatsapp-cloud-api).
 
