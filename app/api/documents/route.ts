@@ -1,22 +1,29 @@
+import {validOrigin} from '../../../services/auth/policy';
+import {DOCUMENT_MAX_BYTES,documentTypeMatches,documentFilename,validDocumentKey} from '../../../lib/document-policy';
 import { getStorageBucket } from '../../../lib/firebase-admin';
 import { actor, readAll, visible, fail, ClinicError } from '../../../services/server';
 import { canWrite } from '../../../permissions/roles';
-const maxSize = 10 * 1024 * 1024;
+export const runtime='nodejs';
+const maxSize=DOCUMENT_MAX_BYTES;
 export async function POST(req: Request) {
   try {
+    if(!validOrigin(req))throw new ClinicError('Invalid request origin.',403);
+    if(Number(req.headers.get('content-length')||0)>maxSize+65536)throw new ClinicError('Document exceeds upload size limit.',413);
     const u = await actor();
     if (!canWrite(u.role, 'Records')) throw new ClinicError('Your role cannot upload clinical documents.', 403);
     const data = await req.formData(), file = data.get('file');
-    if (!(file instanceof File) || file.size > maxSize || !['application/pdf', 'image/png', 'image/jpeg', 'image/webp'].includes(file.type)) throw new ClinicError('Choose a PDF, PNG, JPEG or WebP under 10 MB');
-    const key = u.owner + '/' + crypto.randomUUID() + '/' + file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
-    await getStorageBucket().file(key).save(Buffer.from(await file.arrayBuffer()), { resumable: false, metadata: { contentType: file.type, cacheControl: 'private, no-store' } });
+    if (!(file instanceof File) || file.size===0 || file.size > maxSize || !['application/pdf', 'image/png', 'image/jpeg', 'image/webp'].includes(file.type)) throw new ClinicError('Choose a PDF, PNG, JPEG or WebP under 10 MB');
+    const bytes=Buffer.from(await file.arrayBuffer());
+    if(!documentTypeMatches(bytes,file.type))throw new ClinicError('File contents do not match the selected PDF or image type.');
+    const key = u.owner + '/' + crypto.randomUUID() + '/' + documentFilename(file.name);
+    await getStorageBucket().file(key).save(bytes, { resumable: false, metadata: { contentType: file.type, cacheControl: 'private, no-store' } });
     return Response.json({ key });
   } catch (e) { return fail(e); }
 }
 export async function GET(req: Request) {
   try {
     const u = await actor(), key = new URL(req.url).searchParams.get('key');
-    if (!key?.startsWith(u.owner + '/') || key.includes('/../')) return new Response('Not found', { status: 404 });
+    if (!key || !validDocumentKey(key,u.owner)) return new Response('Not found', { status: 404 });
     const records = visible(await readAll(u.owner), u);
     if (u.role !== 'Super Admin' && !records.some(x => x.kind === 'Records' && x.data.documentKey === key)) return new Response('Not found', { status: 404 });
     const file = getStorageBucket().file(key);

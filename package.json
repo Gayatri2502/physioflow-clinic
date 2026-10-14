@@ -13,7 +13,7 @@
     "lint": "eslint . --ignore-pattern dist --ignore-pattern .next",
     "typecheck": "tsc --noEmit --incremental false",
     "test:auth": "node tests/run-auth-security.mjs && node tests/run-auth-session.mjs && node tests/integration/run-signup.mjs && node tests/integration/run-signup-lifecycle.mjs",
-    "test:clinic": "node tests/integration/run-check.mjs",
+    "test:clinic": "node tests/document-policy.test.mjs && node tests/integration/run-check.mjs",
     "test:integrations": "node --test tests/whatsapp-templates.test.mjs tests/razorpay.test.mjs tests/payment-settlement.test.mjs tests/communications.test.mjs tests/vapi-check.test.mjs && node tests/integration/run-reminders.mjs",
     "test": "pnpm test:auth && pnpm test:clinic && pnpm test:integrations",
     "db:export": "node scripts/firebase-data.mjs export",
