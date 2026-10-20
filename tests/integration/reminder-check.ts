@@ -1,3 +1,6 @@
+import {dispatchClinicMessages} from '../../lib/communications/event-dispatch';
+import {queueChangedMessages} from '../../lib/communications/event-queue.mjs';
+import {POST as voiceStatusPOST} from '../../app/api/communications/voice-status/route';
 import assert from 'node:assert/strict';
 import {createHmac, createHash} from 'node:crypto';
 import {FakeFirestore} from './fake-firestore';
@@ -16,7 +19,7 @@ let db: FakeFirestore, sends = 0, count = 0;
 function reset() {
  db = new FakeFirestore(); (globalThis as any).__firestore = db;
  (globalThis as any).__actor = {owner: 'physioflow', email: 'owner@example.test', role: 'Super Admin'};
- Object.assign(process.env, {FIREBASE_CLINIC_ID: 'physioflow', WHATSAPP_ENABLED: 'true', WHATSAPP_ACCESS_TOKEN: 'mock-token', WHATSAPP_PHONE_NUMBER_ID: 'sender-1', WHATSAPP_GRAPH_VERSION: 'v99.0', WHATSAPP_REMINDER_TEMPLATE: 'test_reminder', WHATSAPP_TEMPLATE_LANGUAGE: 'en', WHATSAPP_BUSINESS_ACCOUNT_ID: 'business-1', WHATSAPP_APP_SECRET: 'mock-app-secret', WHATSAPP_WEBHOOK_VERIFY_TOKEN: 'mock-verification-token', REMINDER_JOB_SECRET: 'mock-job-secret-with-at-least-32-characters', WHATSAPP_AUTOMATIC_REMINDERS_ENABLED: 'true', WHATSAPP_REMINDER_LEAD_HOURS: '24', WHATSAPP_REMINDER_WINDOW_MINUTES: '60', WHATSAPP_REMINDER_BATCH_SIZE: '5'});
+ Object.assign(process.env, {FIREBASE_CLINIC_ID: 'physioflow', WHATSAPP_ENABLED: 'true', WHATSAPP_ACCESS_TOKEN: 'mock-token', WHATSAPP_PHONE_NUMBER_ID: 'sender-1', WHATSAPP_GRAPH_VERSION: 'v99.0', WHATSAPP_REMINDER_TEMPLATE: 'test_reminder', WHATSAPP_TEMPLATE_LANGUAGE: 'en', WHATSAPP_BUSINESS_ACCOUNT_ID: 'business-1', WHATSAPP_APP_SECRET: 'mock-app-secret', WHATSAPP_WEBHOOK_VERIFY_TOKEN: 'mock-verification-token', REMINDER_JOB_SECRET: 'mock-job-secret-with-at-least-32-characters', WHATSAPP_EVENT_MESSAGES_ENABLED:'false', WHATSAPP_AUTOMATIC_REMINDERS_ENABLED: 'true', WHATSAPP_REMINDER_LEAD_HOURS: '24', WHATSAPP_REMINDER_WINDOW_MINUTES: '60', WHATSAPP_REMINDER_BATCH_SIZE: '5'});
  db.store.set('clinics/physioflow', {version: 0});
  patient(); appointment('a1'); sends = 0;
  globalThis.fetch = async () => {sends++; return Response.json({messages: [{id: 'wamid.' + sends}]});};
@@ -175,6 +178,30 @@ async function main() {
   assert.equal((await historyGET(new Request('https://clinic.test/?appointmentId=a1'))).status, 403);
   assert.equal((await contactPOST(new Request('https://clinic.test/', {method: 'POST', body: JSON.stringify({appointmentId: 'a1', channel: 'whatsapp', confirmed: true})}))).status, 403);
   (globalThis as any).__actor = null; assert.equal((await historyGET(new Request('https://clinic.test/?appointmentId=a1'))).status, 401);
+ });
+ await check('clinic events reserve once and deliver with exact approved bindings',async()=>{
+ process.env.WHATSAPP_EVENT_MESSAGES_ENABLED='true';
+ const record={...db.store.get('clinics/physioflow/records/a1'),id:'a1',data:{...db.store.get('clinics/physioflow/records/a1').data,Status:'Confirmed'}};
+ db.store.set('clinics/physioflow/records/a1',record);
+ await db.runTransaction(async tx=>queueChangedMessages(tx,db.collection('clinics').doc('physioflow'),[],[{type:'put',record}],1));
+ let parameters:any;globalThis.fetch=async(_url,options)=>{sends++;parameters=JSON.parse(String(options?.body));return Response.json({messages:[{id:'event-message'}]});};
+ const results=await Promise.all([dispatchClinicMessages(),dispatchClinicMessages()]);assert.equal(results.reduce((n,r)=>n+r.accepted,0),1);assert.equal(sends,1);assert.equal(parameters.template.name,'physioflow_booking_confirmation_v1');assert.equal(parameters.template.components[0].parameters[0].text,'2030-01-02');
+ });
+ await check('clinic events stop after consent withdrawal or a changed record',async()=>{
+ process.env.WHATSAPP_EVENT_MESSAGES_ENABLED='true';const record={...db.store.get('clinics/physioflow/records/a1'),id:'a1',data:{...db.store.get('clinics/physioflow/records/a1').data,Status:'Confirmed'}};
+ db.store.set('clinics/physioflow/records/a1',record);await db.runTransaction(async tx=>queueChangedMessages(tx,db.collection('clinics').doc('physioflow'),[],[{type:'put',record}],1));patient({'WhatsApp Consent':'No'});assert.equal((await dispatchClinicMessages()).skipped,1);assert.equal(sends,0);
+ });
+ await check('clinic event uncertain outcomes are not retried',async()=>{
+ process.env.WHATSAPP_EVENT_MESSAGES_ENABLED='true';const record={...db.store.get('clinics/physioflow/records/a1'),id:'a1',data:{...db.store.get('clinics/physioflow/records/a1').data,Status:'Confirmed'}};
+ db.store.set('clinics/physioflow/records/a1',record);await db.runTransaction(async tx=>queueChangedMessages(tx,db.collection('clinics').doc('physioflow'),[],[{type:'put',record}],1));globalThis.fetch=async()=>{sends++;throw Error('Timeout')};assert.equal((await dispatchClinicMessages()).needsReview,1);await dispatchClinicMessages();assert.equal(sends,1);
+ });
+ await check('Vapi result review verifies clinic binding and stores only outcome metadata',async()=>{
+ Object.assign(process.env,{VAPI_PRIVATE_KEY:'mock',VAPI_ASSISTANT_ID:'assistant',VAPI_PHONE_NUMBER_ID:'caller'});
+ db.store.set('clinics/physioflow/contactRequests/voice1',{channel:'voice',providerId:'call1'});
+ globalThis.fetch=async()=>Response.json({id:'call1',assistantId:'assistant',phoneNumberId:'caller',status:'ended',endedReason:'customer-ended-call',transcript:'private transcript'});
+ const request=()=>new Request('https://clinic.test/api/communications/voice-status',{method:'POST',headers:{origin:'https://clinic.test','Content-Type':'application/json'},body:JSON.stringify({requestId:'voice1'})});
+ assert.equal((await voiceStatusPOST(request())).status,200);assert.equal(db.store.get('clinics/physioflow/contactRequests/voice1').callStatus,'ended');assert.equal(JSON.stringify(db.store.get('clinics/physioflow/contactRequests/voice1')).includes('private transcript'),false);
+ (globalThis as any).__actor.role='Patient';assert.equal((await voiceStatusPOST(request())).status,403);
  });
  console.log(count + ' mocked reminder checks passed; no external requests performed.');
 }

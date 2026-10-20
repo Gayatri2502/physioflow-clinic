@@ -1,0 +1,198 @@
+{
+  "syncedAt": "2026-10-20T11:31:41.600Z",
+  "source": "Meta WhatsApp Manager: Test WhatsApp Business Account; Active - Quality pending",
+  "events": {
+    "rebooking_invitation": {
+      "name": "physioflow_rebooking_invitation_v1",
+      "category": "MARKETING",
+      "status": "APPROVED",
+      "language": "en",
+      "components": [
+        {
+          "type": "BODY",
+          "text": "Hello from PhysioFlow Clinic. If you would like to arrange another appointment, please contact reception to discuss availability. This is an optional invitation, not medical advice. Reply STOP to unsubscribe."
+        }
+      ]
+    },
+    "clinic_updates": {
+      "name": "physioflow_clinic_updates_v1",
+      "category": "MARKETING",
+      "status": "APPROVED",
+      "language": "en",
+      "components": [
+        {
+          "type": "BODY",
+          "text": "You opted in to updates from PhysioFlow Clinic. Contact reception if you would like to learn about our physiotherapy services and appointment availability. Reply STOP to unsubscribe."
+        }
+      ]
+    },
+    "service_disruption": {
+      "name": "physioflow_service_disruption_v1",
+      "category": "UTILITY",
+      "status": "APPROVED",
+      "language": "en",
+      "components": [
+        {
+          "type": "BODY",
+          "text": "PhysioFlow Clinic needs to change arrangements for your booked appointment on {{1}} at {{2}} (India time) because of a clinic service disruption. Please contact reception before travelling to confirm the updated arrangements."
+        }
+      ]
+    },
+    "visit_feedback": {
+      "name": "physioflow_visit_feedback_v1",
+      "category": "UTILITY",
+      "status": "APPROVED",
+      "language": "en",
+      "components": [
+        {
+          "type": "BODY",
+          "text": "Thank you for attending your PhysioFlow Clinic appointment on {{1}}. Would you share feedback about the booking and clinic service? Please avoid sending medical details here. Reply STOP to stop feedback requests."
+        }
+      ]
+    },
+    "documents_ready": {
+      "name": "physioflow_documents_ready_v1",
+      "category": "UTILITY",
+      "status": "APPROVED",
+      "language": "en",
+      "components": [
+        {
+          "type": "BODY",
+          "text": "The document you requested from PhysioFlow Clinic is ready. Please sign in to your clinic portal or contact reception to collect it securely. No private document details are included in this message."
+        }
+      ]
+    },
+    "requested_plan_reminder": {
+      "name": "physioflow_requested_plan_reminder_v1",
+      "category": "UTILITY",
+      "status": "APPROVED",
+      "language": "en",
+      "components": [
+        {
+          "type": "BODY",
+          "text": "This is the PhysioFlow Clinic reminder you requested for your existing care plan. Please follow only the instructions your treating clinician has already provided. Contact the clinic if you need clarification. Reply STOP to stop these reminders."
+        }
+      ]
+    },
+    "package_balance": {
+      "name": "physioflow_package_balance_v1",
+      "category": "UTILITY",
+      "status": "APPROVED",
+      "language": "en",
+      "components": [
+        {
+          "type": "BODY",
+          "text": "Your existing PhysioFlow Clinic session package has {{1}} sessions remaining and expires on {{2}}. Please contact reception to review the details of your current package."
+        }
+      ]
+    },
+    "refund_processed": {
+      "name": "physioflow_refund_processed_v1",
+      "category": "UTILITY",
+      "status": "APPROVED",
+      "language": "en",
+      "components": [
+        {
+          "type": "BODY",
+          "text": "PhysioFlow Clinic has processed a refund of INR {{1}} for reference {{2}}. The time for the amount to appear depends on your payment provider. Please contact reception for assistance."
+        }
+      ]
+    },
+    "payment_due": {
+      "name": "physioflow_payment_due_v1",
+      "category": "UTILITY",
+      "status": "APPROVED",
+      "language": "en",
+      "components": [
+        {
+          "type": "BODY",
+          "text": "A balance of INR {{1}} remains on your PhysioFlow Clinic invoice {{2}}, due on {{3}}. Please review your invoice securely in the clinic portal or contact reception if you have already paid."
+        }
+      ]
+    },
+    "payment_receipt": {
+      "name": "physioflow_payment_receipt_v1",
+      "category": "UTILITY",
+      "status": "APPROVED",
+      "language": "en",
+      "components": [
+        {
+          "type": "BODY",
+          "text": "PhysioFlow Clinic received your payment of INR {{1}} against invoice {{2}}. Your receipt is available through reception or your clinic portal. Please contact reception if this is incorrect."
+        }
+      ]
+    },
+    "invoice_ready": {
+      "name": "physioflow_invoice_ready_v1",
+      "category": "UTILITY",
+      "status": "APPROVED",
+      "language": "en",
+      "components": [
+        {
+          "type": "BODY",
+          "text": "PhysioFlow Clinic has prepared invoice {{1}} for INR {{2}} for your recent visit. Please sign in to your clinic portal or contact reception to view the invoice securely."
+        }
+      ]
+    },
+    "missed_appointment": {
+      "name": "physioflow_missed_appointment_v1",
+      "category": "UTILITY",
+      "status": "APPROVED",
+      "language": "en",
+      "components": [
+        {
+          "type": "BODY",
+          "text": "We could not complete your scheduled PhysioFlow Clinic appointment on {{1}} at {{2}} (India time). Please contact reception to discuss this booking or arrange another time."
+        }
+      ]
+    },
+    "appointment_cancelled": {
+      "name": "physioflow_appointment_cancelled_v1",
+      "category": "UTILITY",
+      "status": "APPROVED",
+      "language": "en",
+      "components": [
+        {
+          "type": "BODY",
+          "text": "Your PhysioFlow Clinic appointment on {{1}} at {{2}} (India time) has been cancelled. Please contact reception if this cancellation was not expected."
+        }
+      ]
+    },
+    "appointment_rescheduled": {
+      "name": "physioflow_appointment_rescheduled_v1",
+      "category": "UTILITY",
+      "status": "APPROVED",
+      "language": "en",
+      "components": [
+        {
+          "type": "BODY",
+          "text": "Your appointment with PhysioFlow Clinic has been rescheduled as requested to {{1}} at {{2}} (India time). Please contact reception if these details are incorrect."
+        }
+      ]
+    },
+    "booking_confirmation": {
+      "name": "physioflow_booking_confirmation_v1",
+      "category": "UTILITY",
+      "status": "APPROVED",
+      "language": "en",
+      "components": [
+        {
+          "type": "BODY",
+          "text": "Your appointment with PhysioFlow Clinic is confirmed for {{1}} at {{2}} (India time). Please contact reception if you need to change this booking."
+        }
+      ]
+    },
+    "appointment_reminder": {
+      "name": "physioflow_appointment_reminder_v1",
+      "category": "UTILITY",
+      "status": "APPROVED",
+      "language": "en",
+      "components": [
+        {
+          "type": "BODY",
+          "text": "Reminder from PhysioFlow Clinic: your scheduled appointment is on {{1}} at {{2}} (India time). Please contact reception if you need to change or cancel this booking."
+        }
+      ]
+    }
+  }
+}

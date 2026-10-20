@@ -1,3 +1,4 @@
+import {queueChangedMessages} from '../lib/communications/event-queue.mjs';
 import { getFirebaseUser } from '../app/firebase-auth';
 import { OWNER_EMAIL } from '../config/clinic';
 import { visibleRecords } from './domain/access';
@@ -57,6 +58,9 @@ export async function atomicBatch(owner: string, version: number, mutations: Mut
     if (!current.exists) throw new ClinicError('Clinic access has not been configured.', 403);
     if (current.data()?.migrationState === 'importing') throw new ClinicError('Clinic data migration is in progress. Please retry later.', 503);
     if (Number(current.data()?.version || 0) !== version) throw new ClinicError('Another staff member changed clinic records. Reload and try again.', 409);
+    const previousRecords=await tx.get(ref.collection('records'));
+    const before=previousRecords.docs.map(x=>({...x.data(),id:x.id}));
+    queueChangedMessages(tx,ref,before,mutations,version+1);
     const counters:Record<string,number>={};
     for (const mutation of mutations) {
       if (mutation.type === 'put') tx.set(ref.collection('records').doc(mutation.record.id), JSON.parse(JSON.stringify(mutation.record)));

@@ -5,6 +5,9 @@ runConfig:
   maxInstances: 2
   concurrency: 20
 env:
+  - variable: WHATSAPP_EVENT_MESSAGES_ENABLED
+    value: "false"
+    availability: [RUNTIME]
   - variable: RAZORPAY_ENABLED
     value: "false"
     availability: [RUNTIME]

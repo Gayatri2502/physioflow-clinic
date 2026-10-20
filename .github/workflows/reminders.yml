@@ -1,0 +1,27 @@
+name: Clinic reminder scheduler
+on:
+  workflow_dispatch:
+  schedule:
+    - cron: '*/15 * * * *'
+permissions: {}
+concurrency:
+  group: clinic-reminders
+  cancel-in-progress: false
+jobs:
+  reminders:
+    if: vars.REMINDER_SCHEDULER_ENABLED == 'true'
+    runs-on: ubuntu-latest
+    timeout-minutes: 3
+    steps:
+      - name: Run configured clinic reminder worker
+        env:
+          REMINDER_URL: ${{ secrets.REMINDER_URL }}
+          REMINDER_JOB_SECRET: ${{ secrets.REMINDER_JOB_SECRET }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          [[ "$REMINDER_URL" == https://*'/api/communications/reminders' ]]
+          [[ ${#REMINDER_JOB_SECRET} -ge 32 ]]
+          curl --silent --show-error --fail --max-time 150 --request POST \
+            --header "Authorization: Bearer $REMINDER_JOB_SECRET" \
+            "$REMINDER_URL" --output /dev/null

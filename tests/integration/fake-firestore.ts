@@ -16,7 +16,7 @@ class Query {
  limit(count:number){return new Query(this.db,this.path,this.filters,this.sort,count)}
  async get(){const prefix=this.path+'/';let docs=[...this.db.store].filter(([path,value])=>path.startsWith(prefix)&&!path.slice(prefix.length).includes('/')&&this.filters.every(([field,expected,op])=>{const actual=field.split('.').reduce((v:any,key:string)=>v?.[key],value);return op==='=='?actual===expected:actual!==undefined&&actual<=expected})).map(([path,value])=>new Snapshot(new Document(this.db,path),value));if(this.sort){const [field,dir]=this.sort;docs.sort((a,b)=>String(a.data()[field]).localeCompare(String(b.data()[field]))*(dir==='desc'?-1:1));}if(this.count!==undefined)docs=docs.slice(0,this.count);return {docs,empty:docs.length===0,size:docs.length};}
 }
-class Collection extends Query {doc(id=randomUUID()){return new Document(this.db,this.path+'/'+id)} async add(value:any){const doc=this.doc();await doc.create(value);return doc}}
+class Collection extends Query {doc(id:string=randomUUID()){return new Document(this.db,this.path+'/'+id)} async add(value:any){const doc=this.doc();await doc.create(value);return doc}}
 class Document {
  constructor(public db:FakeFirestore,public path:string){} get id(){return this.path.split('/').pop()!} collection(name:string){return new Collection(this.db,this.path+'/'+name)}
  async get(){return new Snapshot(this,this.db.store.get(this.path))}

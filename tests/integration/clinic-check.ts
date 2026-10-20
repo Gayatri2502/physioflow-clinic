@@ -1,3 +1,4 @@
+import {POST as clinicEventPOST} from '../../app/api/communications/events/route';
 import assert from 'node:assert/strict';
 import {workspaceFor} from '../../permissions/workspaces';
 import {roles,canRead,canWrite} from '../../permissions/roles';
@@ -146,5 +147,14 @@ await clinic.update({migrationState:'importing'});response=await api.GET();asser
 console.log('PASS: invalid calendar/time rejection, follow-up overlap/reschedule, monotonic identifiers, closed-day edits, consent validation, care plans, all report types, administrator boundaries, rollback and migration lock.');
 
 (globalThis as any).__testUser=null;response=await api.GET();assert.equal(response.status,401);
+await verifyManualMessageAuthorization();
 console.log('PASS: CRUD, appointments/conflicts, consultation/follow-up, package consumption, payment/partial/refund reconciliation, claim validation, protected deletion, role isolation, report calculations, document upload/download and authentication.');
 })().catch(e=>{console.error(e);process.exit(1)});
+
+async function verifyManualMessageAuthorization(){
+ const request=(body:any,origin='https://clinic.test')=>new Request('https://clinic.test/api/communications/events',{method:'POST',headers:{origin,'Content-Type':'application/json'},body:JSON.stringify(body)});
+ (globalThis as any).__testUser=null;
+ assert.equal((await clinicEventPOST(request({event:'payment_due',recordId:'invoice',confirmed:true}))).status,401);
+ assert.equal((await clinicEventPOST(request({event:'payment_due',recordId:'invoice',confirmed:true},'https://evil.test'))).status,403);
+ console.log('PASS manual message requests reject anonymous users and cross-site requests');
+}
