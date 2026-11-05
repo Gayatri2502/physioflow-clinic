@@ -1,0 +1,10 @@
+.env*
+!.env.example
+.git
+.next
+node_modules
+dist
+legacy-sites
+postman
+CLAUDE.md
+*.zip

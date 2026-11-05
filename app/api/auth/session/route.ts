@@ -18,7 +18,7 @@ export async function POST(request:Request){
  try{const auth=getAdminAuth();const token=await auth.verifyIdToken(body.idToken,true);
  if(!isGoogleIdentity(token)||!isRecentSignIn(token.auth_time))return NextResponse.json({error:'Sign in again with a verified Google account.'},{status:401});
  const session=await auth.createSessionCookie(body.idToken,{expiresIn:SESSION_SECONDS*1000});const response=NextResponse.json({ok:true},{headers:{'Cache-Control':'no-store'}});response.cookies.set(SESSION_COOKIE,session,{...cookieOptions,maxAge:SESSION_SECONDS});response.cookies.set(CSRF_COOKIE,'',{...cookieOptions,maxAge:0});return response;
- }catch{return NextResponse.json({error:'Google sign-in could not be verified. Try again.'},{status:401});}
+ }catch(error){const code=error&&typeof error==='object'&&'code' in error?String(error.code):'unknown';console.error('Google session verification failed',{code});return NextResponse.json({error:'Google sign-in could not be verified. Try again.'},{status:401});}
 }
 export async function DELETE(request:Request){
  if(!validOrigin(request))return NextResponse.json({error:'Invalid request origin.'},{status:403});

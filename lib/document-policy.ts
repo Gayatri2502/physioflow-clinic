@@ -1,4 +1,4 @@
-export const DOCUMENT_MAX_BYTES=10*1024*1024;
+export const DOCUMENT_MAX_BYTES=4*1024*1024;
 export function validDocumentKey(key:string,clinic:string){
  return key.startsWith(clinic+'/')&&new RegExp('^[a-zA-Z0-9_-]+/[a-f0-9-]{36}/[a-zA-Z0-9._-]{1,180}$').test(key)&&!key.split('/').some(x=>x==='.'||x==='..');
 }
